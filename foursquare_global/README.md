@@ -10,7 +10,7 @@ The dataset contains 33,278,683 check-ins made by 266,909 users on 3,680,126 Fou
 ### Usage
 
 ```
-Example: python3 scripts/config_database.py config.ini op params
+Example: python3 config_database.py config.ini op params
 Valid operations:
     		create  -  creates the database schema and populates basic info (no params)
     		drop    -  drops the database schema (no params)
