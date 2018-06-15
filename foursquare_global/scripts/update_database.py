@@ -21,4 +21,4 @@ def update_venues(params):
     FQ_VENUE_ENDPOINT = config['FOURSQUARE_API']['VENUE_ENDPOINT']
     FQ_CATEGORY_ENDPOINT = config['FOURSQUARE_API']['CATEGORY_ENDPOINT']
 
-	logger.log(Logger.INFO, "TO-DO")
+    logger.log(Logger.INFO, "TO-DO")
