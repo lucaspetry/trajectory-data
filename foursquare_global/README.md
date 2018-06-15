@@ -3,6 +3,10 @@
 These scripts were developed for handling the Foursquare global-scale check-in dataset available [here](https://sites.google.com/site/yangdingqi/home/foursquare-dataset).
 The scripts create the schema for a PostgreSQL database, import the check-in data and get venue details from the Foursquare API.
 
+### The dataset
+
+The dataset contains 33,278,683 check-ins made by 266,909 users on 3,680,126 Foursquare venues. The data is from April 2012 to September 2013 and includes 415 cities in 77 countries around the world.
+
 ### Usage
 
 ```
