@@ -77,6 +77,11 @@ def import_venues(poi_file):
 
     count = 0
 
+    logger.log(Logger.INFO, "Restarting venue table sequence... ")
+    DB.execute("ALTER SEQUENCE " + DBSPEC.TB_VENUE + "_id_seq RESTART WITH 1")
+    DB.commit()
+    logger.log(Logger.INFO, "Restarting venue table sequence... SUCCESS!")
+
     with open(poi_file, 'r') as pois:
         reader = csv.reader(pois, delimiter='\t')
 
@@ -94,16 +99,6 @@ def import_venues(poi_file):
     DB.commit()
     logger.log(Logger.INFO, str(count) + " venues imported!")
 
-def get_aware_date_time(date_str, offset):
-    hours = abs(offset) // 60
-    minutes = abs(offset) % 60
-    str_offset = '+' if offset > 0 else '-'
-    str_offset += "0" + str(hours) if hours < 10 else str(hours)
-    str_offset += "0" + str(minutes) if minutes < 10 else str(minutes)
-    str_date = date_str[:-10] + str_offset + " " + date_str[-4:]
-    
-    return datetime.strptime(str_date, '%a %b %d %H:%M:%S %z %Y')
-
 def import_checkins(checkin_file):
     checkin_count = DB.query("SELECT COUNT(*) FROM " + DBSPEC.TB_CHECKIN + ";")[0][0]
 
@@ -113,6 +108,11 @@ def import_checkins(checkin_file):
 
     count = 0
     user_count = 0
+
+    logger.log(Logger.INFO, "Restarting check-in table sequence... ")
+    DB.execute("ALTER SEQUENCE " + DBSPEC.TB_CHECKIN + "_id_seq RESTART WITH 1")
+    DB.commit()
+    logger.log(Logger.INFO, "Restarting check-in table sequence... SUCCESS!")
 
     with open(checkin_file, 'r') as checkins:
         reader = csv.reader(checkins, delimiter='\t')
@@ -129,14 +129,13 @@ def import_checkins(checkin_file):
                 user_count += 1
 
             # Inserts the check-in
-            insert_query = "INSERT INTO " + DBSPEC.TB_CHECKIN + """ (anonymized_user_id, date_time, venue_id)
-            VALUES (:anonymized_user_id, :date_time, :venue_id);"""
+            insert_query = "INSERT INTO " + DBSPEC.TB_CHECKIN + """ (anonymized_user_id, date_time, utc_offset, venue_id)
+            VALUES (:anonymized_user_id, :date_time, :utc_offset, :venue_id);"""
 
             try:
-                full_date_time = get_aware_date_time(date_time, int(offset))
-
                 insert_query = insert_query.replace(":anonymized_user_id", str(user))
-                insert_query = insert_query.replace(":date_time", "'" + str(full_date_time) + "'")
+                insert_query = insert_query.replace(":date_time", "'" + str(date_time) + "'")
+                insert_query = insert_query.replace(":utc_offset", str(offset))
                 insert_query = insert_query.replace(":venue_id", str(venue_id))
                 DB.execute(insert_query)
 

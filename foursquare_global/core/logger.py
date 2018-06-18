@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 class Logger(object):
 
@@ -16,14 +17,17 @@ class Logger(object):
             sys.stdout.flush()
             Logger.LOG_LINE = None
 
-        sys.stdout.write(str(type) + " " + message + "\n")
+        sys.stdout.write(str(type) + " " + self.cur_date_time() + " :: " + message + "\n")
         sys.stdout.flush()
 
     def log_dyn(self, type, message):
-        line = str(type) + " " + message
+        line = str(type) + " " + self.cur_date_time() + " :: " + message
         sys.stdout.write("\r\x1b[K" + line.__str__())
         sys.stdout.flush()
         Logger.LOG_LINE = line
 
     def get_answer(self, message):
-        return input(Logger.QUESTION + " " + message)
+        return input(Logger.QUESTION + " " + self.cur_date_time() + " :: " + message)
+
+    def cur_date_time(self):
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

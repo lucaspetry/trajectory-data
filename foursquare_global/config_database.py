@@ -77,6 +77,12 @@ if OPERATION == 'create':
 	db.close()
 	exit()
 elif OPERATION == 'drop':
+	option = logger.get_answer("The drop option will clear the database and drop all" + \
+			" existing tables. Do you want to continue? (y/N) ").lower()
+
+	if option != 'y':
+		exit()
+
 	logger.log_dyn(Logger.INFO, "Dropping schema for database '" + str(config['DATABASE']['NAME']) + "'... ")
 	db.execute(open(DROP_SCHEMA_FILE, "r").read())
 	db.commit()

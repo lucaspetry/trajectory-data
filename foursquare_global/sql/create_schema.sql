@@ -133,7 +133,8 @@ CREATE TABLE fq_venue_category (
 CREATE TABLE fq_checkin (
     id serial PRIMARY KEY,
     anonymized_user_id INTEGER REFERENCES fq_anonymized_user(id) NOT NULL,
-    date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    date_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    utc_offset INTEGER NOT NULL,
     venue_id INTEGER REFERENCES fq_venue(id) NOT NULL,
     weather_id INTEGER REFERENCES wu_weather(id)   
 );
