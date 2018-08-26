@@ -99,6 +99,9 @@ def import_venues(poi_file):
     DB.commit()
     logger.log(Logger.INFO, str(count) + " venues imported!")
 
+def parse_date_time(date_str):
+    return datetime.strptime(date_str, '%a %b %d %H:%M:%S %z %Y')
+
 def import_checkins(checkin_file):
     checkin_count = DB.query("SELECT COUNT(*) FROM " + DBSPEC.TB_CHECKIN + ";")[0][0]
 
@@ -133,6 +136,8 @@ def import_checkins(checkin_file):
             VALUES (:anonymized_user_id, :date_time, :utc_offset, :venue_id);"""
 
             try:
+                parse_date_time(date_time)
+
                 insert_query = insert_query.replace(":anonymized_user_id", str(user))
                 insert_query = insert_query.replace(":date_time", "'" + str(date_time) + "'")
                 insert_query = insert_query.replace(":utc_offset", str(offset))

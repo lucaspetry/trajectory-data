@@ -1,16 +1,15 @@
 import sys
 from datetime import datetime
 
-
 class Logger(object):
 
     LOG_LINE = None
-    INFO = '[    INFO    ]'
-    WARNING = '[  WARNING   ]'
-    ERROR = '[   ERROR    ]'
-    CONFIG = '[   CONFIG   ]'
-    RUNNING = '[  RUNNING   ]'
-    QUESTION = '[  QUESTION  ]'
+    INFO        = '[    INFO    ]'
+    WARNING     = '[  WARNING   ]'
+    ERROR       = '[   ERROR    ]'
+    CONFIG      = '[   CONFIG   ]'
+    RUNNING     = '[  RUNNING   ]'
+    QUESTION    = '[  QUESTION  ]'
 
     def log(self, type, message):
         if Logger.LOG_LINE:

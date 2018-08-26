@@ -10,7 +10,7 @@ FQ_VENUE_ENDPOINT = None
 FQ_CATEGORY_ENDPOINT = None
 
 
-def update_venues(params):
+def update_venues(db, config, reset = False):
     global FQ_V, FQ_PREMIUM_CALLS, FQ_REGULAR_CALLS, \
         FQ_VENUE_ENDPOINT, FQ_CATEGORY_ENDPOINT, DB
 
