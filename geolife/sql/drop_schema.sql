@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS ge_point;
+DROP TABLE IF EXISTS ge_transportation;
+DROP TABLE IF EXISTS ge_user;

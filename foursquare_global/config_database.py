@@ -66,7 +66,7 @@ if OPS_PARAMS[VALID_OPS.index(OPERATION)] != len(PARAMS):
 if(db.connect()):
     logger.log(Logger.INFO, "Succesfully connected to database \'" + str(config['DATABASE']['NAME']) + "\'!")
 else:
-    logger.log(Logger.INFO, "Failed connecting to database \'" + str(config['DATABASE']['NAME']) + "\'!")
+    logger.log(Logger.ERROR, "Failed connecting to database \'" + str(config['DATABASE']['NAME']) + "\'!")
 
 
 if OPERATION == 'create':
