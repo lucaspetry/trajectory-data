@@ -23,6 +23,7 @@ CREATE TABLE ge_transportation (
 
 CREATE TABLE ge_point (
     id serial PRIMARY KEY,
+    tid INTEGER NOT NULL,
     user_id INTEGER REFERENCES ge_user(id) NOT NULL,
     geom geometry(Point,4326) NOT NULL,
     altitude INTEGER DEFAULT -999,

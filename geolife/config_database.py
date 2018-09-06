@@ -10,7 +10,7 @@ logger = Logger()
 arg_parser = argparse.ArgumentParser(
     description='Create/import the geolife dataset.')
 arg_parser.add_argument('operation',
-                        choices=['create', 'drop'],
+                        choices=['create', 'drop', 'segment'],
                         help='The operation to be done.',
                         type=str)
 arg_parser.add_argument('folder',
@@ -68,6 +68,7 @@ if args.operation == 'create':
                    transp[key] + ", '" + key + "')")
 
     db.commit()
+    tid = 1
 
     for user in users:
         root = args.folder + '/' + user + '/Trajectory/'
@@ -83,8 +84,8 @@ if args.operation == 'create':
                 for line in f:
                     lat, lon, _, altitude, _, date, time = line.split(',')
                     date_time = date + ' ' + time
-                    point_query = """INSERT INTO ge_point(user_id, geom, altitude,
-                                     date_time, utc_offset) VALUES (""" + user + \
+                    point_query = """INSERT INTO ge_point(tid, user_id, geom, altitude,
+                                     date_time, utc_offset) VALUES (""" + str(tid) + ", " + user + \
                         """, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :altitude,
                            ':date_time', 8)"""
 
@@ -97,6 +98,7 @@ if args.operation == 'create':
                     count += 1
                     logger.log_dyn(Logger.INFO, 'Inserting user ' + user +
                                    ' (' + str(count) + ' points imported).')
+            tid += 1
 
         if os.path.isfile(modes):
             df = pd.read_csv(modes, sep='\t')
@@ -133,3 +135,47 @@ elif args.operation == 'drop':
                str(config['DATABASE']['NAME']) + "'... SUCCESS!")
     db.close()
     exit()
+elif args.operation == 'segment':
+    tidcol_query = "ALTER TABLE ge_point ADD COLUMN mode_tid INTEGER"
+    users_query = "SELECT DISTINCT user_id FROM ge_point ORDER BY user_id ASC"
+    select_query = """SELECT p.id, p.tid, t.mode FROM ge_point p
+                      INNER JOIN ge_transportation t ON p.transportation_id =
+                      t.id
+                      WHERE p.user_id = :user
+                      ORDER BY p.tid ASC, date_time ASC"""
+    update_query = "UPDATE ge_point SET mode_tid" + \
+                   " = :tid WHERE id IN (:point_ids)"
+    traj_id = 1
+
+    logger.log(Logger.INFO, "Segmenting trajectories... ")
+    db.execute(tidcol_query)
+    
+    for user in db.query(users_query):
+        points = db.query(select_query.replace(":user", str(user[0])))
+        update_ids = []
+        cur_mode = None
+
+        for id, tid, mode in points:
+            if mode != cur_mode and len(update_ids) > 0:
+                db.execute(
+                    update_query.replace(":tid", str(traj_id))
+                    .replace(":point_ids", str(update_ids)[1:-1]))
+                update_ids = []
+                traj_id += 1
+
+            cur_mode = mode
+            update_ids.append(id)
+
+        if len(update_ids) > 0:
+            db.execute(
+                update_query.replace(":tid", str(traj_id))
+                .replace(":point_ids", str(update_ids)[1:-1]))
+            update_ids = []
+            traj_id += 1
+
+        db.commit()
+        logger.log_dyn(Logger.INFO, "User " + str(user[0]) + " segmented (" +
+                       str(traj_id - 1) + " segments created).")
+
+    db.close()
+    logger.log(Logger.INFO, "Segmenting trajectories... SUCCESS!")
