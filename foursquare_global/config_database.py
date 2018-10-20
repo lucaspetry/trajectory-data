@@ -14,7 +14,7 @@ def print_valid_ops():
             create  -  creates the database schema and populates basic info (no params)
             drop    -  drops the database schema (no params)
             init    -  imports data from file to database (params = poi_file checkin_file)
-            update  -  update venue information from Foursquare API (params = reset/resume)""")
+            update  -  update venue information from Foursquare API (params = folder reset/resume)""")
 ##########################################################
 
 
@@ -29,7 +29,7 @@ if(len(sys.argv) < 3):
 
 ######################### PARAMS #########################
 VALID_OPS = ['create', 'drop', 'init', 'update']
-OPS_PARAMS = [0, 0, 2, 1]
+OPS_PARAMS = [0, 0, 2, 2]
 CREATE_SCHEMA_FILE = 'sql/create_schema.sql'
 DROP_SCHEMA_FILE = 'sql/drop_schema.sql'
 INSERT_FILES = ['sql/insert_countries.sql']
@@ -79,7 +79,7 @@ if OPERATION == 'create':
         logger.log_dyn(Logger.INFO, "Executing inserts for file '" + file + "'... ")
         db.execute(open(file, "r").read())
         db.commit()
-        logger.log_dyn(Logger.INFO, "Executing inserts for file '" + file + "'... SUCCESS!")
+        logger.log(Logger.INFO, "Executing inserts for file '" + file + "'... SUCCESS!")
 
     db.close()
     exit()
@@ -102,12 +102,13 @@ elif OPERATION == 'init':
     logger.log(Logger.INFO, "Initializing database '" + str(config['DATABASE']['NAME']) + "'... SUCCESS!")
     exit()
 elif OPERATION == 'update':
-    if PARAMS[0] == 'reset':
+    if PARAMS[1] == 'reset':
         option = logger.get_answer("The reset option will clear all venues" + \
             " updated dates and will update them. Do you want to continue? (y/N) ").lower()
 
         if option != 'y':
             exit()
 
-    update_venues(db, config, reset = PARAMS[0] == 'reset')
+    update_venues(db, config, folder=PARAMS[0], reset=PARAMS[1] == 'reset')
+    db.close()
 ##########################################################

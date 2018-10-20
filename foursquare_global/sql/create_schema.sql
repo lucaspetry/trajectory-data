@@ -52,29 +52,44 @@ CREATE TABLE geo_city (
     id serial PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
     city_center geometry(Point,4326),
+    state VARCHAR(200),
     country_id INTEGER REFERENCES geo_country(id)
 );
 
 CREATE TABLE fq_venue (
     id serial PRIMARY KEY,
+    parent_id INTEGER REFERENCES fq_venue(id) DEFAULT NULL,
     foursquare_id VARCHAR(30) UNIQUE NOT NULL,
     date_time_updated TIMESTAMP WITH TIME ZONE,
+
     geom geometry(Point,4326) NOT NULL,
     city_id INTEGER REFERENCES geo_city(id),
+    address VARCHAR(200),
+    postal_code VARCHAR(15),
+    time_zone VARCHAR(50),
+
     name VARCHAR(200),
+    phone VARCHAR(30),
+    twitter VARCHAR(100),
+    instagram VARCHAR(100),
+    facebook VARCHAR(100),
+    url VARCHAR(300),
     verified BOOLEAN,
-    rating DECIMAL(3,1),
-    price_tier INTEGER,
     created_at TIMESTAMP WITHOUT TIME ZONE,
+
     checkins_count INTEGER,
+    likes_count INTEGER,
     users_count INTEGER,
     tips_count INTEGER,
-    visits_count INTEGER,
-    specials_count INTEGER,
     photos_count INTEGER,
     listed_count INTEGER,
+    
+    rating DECIMAL(3,1),
+    price_tier INTEGER,
     hours TEXT,
-    tags TEXT,
+    popular_hours TEXT,
+    attributes TEXT,
+
     atm BOOLEAN,
     coat_check BOOLEAN,
     outdoor_seating BOOLEAN,
