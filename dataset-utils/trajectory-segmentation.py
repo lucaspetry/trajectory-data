@@ -33,6 +33,9 @@ arg_parser.add_argument('--segtype',
                         default='weekly',
                         help='How trajectories should be segmented (default: weekly).',
                         type=str)
+arg_parser.add_argument('--userfilter',
+                        help='A filter on the selected users (in the format of a SQL WHERE expression).',
+                        type=str)
 #arg_parser.add_argument('--plot', action='store_true', help='Pass.')
 args = arg_parser.parse_args()
 
@@ -54,7 +57,7 @@ tidcol_query = "ALTER TABLE " + args.dbtable + \
                " ADD COLUMN " + args.tidcol + " INTEGER"
 
 users_query = "SELECT DISTINCT(anonymized_user_id) FROM " + \
-              args.dbtable + " ORDER BY anonymized_user_id"
+              args.dbtable + " :where ORDER BY anonymized_user_id"
 
 checkins_query = "SELECT id, anonymized_user_id, date_time FROM " + \
                  args.dbtable + " WHERE anonymized_user_id = :user_id " + \
@@ -77,6 +80,12 @@ update_queries = []
 
 try:
     db.execute(tidcol_query)
+
+    if args.userfilter:
+        users_query = users_query.replace(":where", "WHERE " + args.userfilter)
+    else:
+        users_query = users_query.replace(":where", "")
+
     users = db.query(users_query)
 
     for user_id in users:
@@ -112,6 +121,7 @@ try:
                 db.execute(query)
 
             update_queries = []
+            db.commit()
             logger.log(Logger.INFO, "Executing update queries... DONE!")
 
     logger.log(Logger.INFO, "Executing update queries...")
