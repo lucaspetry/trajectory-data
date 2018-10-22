@@ -64,11 +64,11 @@ CREATE TABLE fq_venue (
 
     geom geometry(Point,4326) NOT NULL,
     city_id INTEGER REFERENCES geo_city(id),
-    address VARCHAR(200),
+    address VARCHAR(300),
     postal_code VARCHAR(15),
     time_zone VARCHAR(50),
 
-    name VARCHAR(200),
+    name VARCHAR(250),
     phone VARCHAR(30),
     twitter VARCHAR(100),
     instagram VARCHAR(100),

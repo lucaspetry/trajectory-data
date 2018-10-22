@@ -179,7 +179,7 @@ def update_venue(db, foursquare_id, data, get_date_time):
     update_venue_from_dict(db, foursquare_id, dict_data, get_date_time)
     link_categories(db, foursquare_id, venue['categories'])
     db.commit()
-    logger.log_dyn(Logger.INFO, "Venue '" + foursquare_id + "' updated!")
+    logger.log(Logger.INFO, "Venue '" + foursquare_id + "' updated!")
 
 
 def is_up_to_date(db, foursquare_id, get_date_time):
@@ -193,8 +193,7 @@ def is_up_to_date(db, foursquare_id, get_date_time):
 def update_venues(db, config, folder, reset=False):
     global country_dict
 
-    logger.log(Logger.INFO, "TO-DO")
-    venue_files = reversed(sorted(os.listdir(folder)))
+    venue_files = sorted(os.listdir(folder))
     country_dict = dict(db.query("SELECT code, id FROM geo_country"))
 
     if reset:
@@ -223,8 +222,8 @@ def update_venues(db, config, folder, reset=False):
             data = json.load(f)
 
         if is_up_to_date(db, foursquare_id, modified_timestamp):
-            logger.log(Logger.WARNING, "Venue '" + foursquare_id +
-                       "' is up to date. Skipping...")
+            logger.log_dyn(Logger.WARNING, "Venue '" + foursquare_id +
+                           "' is up to date. Skipping...")
             continue
 
         try:
