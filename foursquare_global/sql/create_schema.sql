@@ -69,7 +69,7 @@ CREATE TABLE fq_venue (
     time_zone VARCHAR(50),
 
     name VARCHAR(250),
-    phone VARCHAR(30),
+    phone VARCHAR(50),
     twitter VARCHAR(100),
     instagram VARCHAR(100),
     facebook VARCHAR(100),
