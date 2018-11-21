@@ -49,6 +49,9 @@ arg_parser.add_argument('--min-traj-count',
                         default=1,
                         help='The minimum number of trajectories per class (default: 1).',
                         type=int)
+arg_parser.add_argument('--userfilter',
+                        help='A filter on the selected users (in the format of a SQL WHERE expression).',
+                        type=str)
 #arg_parser.add_argument('--plot', action='store_true', help='Pass.')
 args = arg_parser.parse_args()
 
@@ -91,12 +94,13 @@ else:
 
 insert_table_query = "CREATE TABLE " + args.totable + \
                      " AS (SELECT * FROM " + args.origtable + " WHERE " + \
-                     args.tidcol + " IS NOT NULL)"
+                     args.tidcol + " IS NOT NULL :where)"
 
 no_cat_query = """DELETE FROM :table WHERE venue_id IN (
-    SELECT t.venue_id FROM :table t
-        LEFT JOIN fq_venue_category vc ON t.venue_id = vc.venue_id
-        WHERE vc.venue_id IS NULL
+    SELECT venue_id FROM :table
+    EXCEPT
+    SELECT v.id FROM fq_venue v
+    INNER JOIN fq_venue_category vc ON v.id = vc.venue_id
 )"""
 
 broad_cat_query = """DELETE FROM :table WHERE venue_id IN (
@@ -126,6 +130,17 @@ broad_cat_query = """DELETE FROM :table WHERE venue_id IN (
         )
 )"""
 
+remove_duplicate_query = """DELETE FROM :table WHERE id IN
+(
+    SELECT DISTINCT(t1.id) FROM :table t1
+    INNER JOIN :table t2 ON t1.id < t2.id
+        AND t1.anonymized_user_id = t2.anonymized_user_id
+        AND t1.venue_id = t2.venue_id
+        AND "timestamp"(t1.date_time) - "timestamp"(t2.date_time) <= (interval '1 minute' * :duplicate_interval)
+        AND "timestamp"(t1.date_time) - "timestamp"(t2.date_time) >= (interval '-1 minute' * :duplicate_interval)
+    ORDER BY t1.id
+)"""
+
 traj_remove_query = """DELETE FROM :table WHERE :tid IN (
     SELECT :tid FROM :table
     GROUP BY :tid HAVING COUNT(*) < :min_length
@@ -140,6 +155,12 @@ remove_class_query = "DELETE FROM :table WHERE :class IN (:values)"
 
 try:
     logger.log(Logger.INFO, "Creating new table '" + args.totable + "'... ")
+
+    if args.userfilter:
+        insert_table_query = insert_table_query.replace(":where", "AND " + args.userfilter)
+    else:
+        insert_table_query = insert_table_query.replace(":where", "")
+
     db.execute(insert_table_query)
     db.commit()
     print_table_stats(table=args.totable,
@@ -172,8 +193,21 @@ if args.filter_category:
 
 # Filter duplicates
 if args.filter_duplicates != -1:
-    logger.log(Logger.INFO, "Filtering duplicates.")
+    threshold = args.filter_duplicates
+    logger.log(Logger.INFO, "Filtering duplicates with a " +
+                            str(threshold) + "-minute threshold...")
 
+    remove_duplicate_query = remove_duplicate_query\
+        .replace(":table", args.totable)\
+        .replace(":duplicate_interval", str(threshold))
+    db.execute(remove_duplicate_query)
+    db.commit()
+
+    print_table_stats(table=args.totable,
+                      tidcol=args.tidcol,
+                      classcol=args.classcol)
+    logger.log(Logger.INFO, "Filtering duplicates with a " +
+                            str(threshold) + "-minute threshold... DONE!")
 
 # Filter trajectories by length
 logger.log(Logger.INFO, "Filtering trajectories with length smaller than " + 
