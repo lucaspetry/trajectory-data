@@ -1,20 +1,41 @@
 import argparse
 import numpy as np
-
-
-arg_parser = argparse.ArgumentParser(description='Print dataset stats.')
-arg_parser.add_argument('file', help='The dataset file', type=str)
-arg_parser.add_argument('--label', default='class', help='The class column (default: class)', type=str)
-arg_parser.add_argument('--tid', default='tid', help='The trajectory ID column (default: tid)', type=str)
-arg_parser.add_argument('--plot', action='store_true', help='Pass this argument to show the trajectory length and class size distributions.')
-args = arg_parser.parse_args()
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import statistics as st
 
-data = pd.read_csv(args.file)
 
+# Parse args
+arg_parser = argparse.ArgumentParser(description='Print dataset stats.')
+arg_parser.add_argument('files',
+                        help='The dataset files.',
+                        type=str,
+                        nargs='+')
+arg_parser.add_argument('--label',
+                        default='class',
+                        help='The class column (default: class).',
+                        type=str)
+arg_parser.add_argument('--tid',
+                        default='tid',
+                        help='The trajectory ID column (default: tid).',
+                        type=str)
+arg_parser.add_argument('--plot',
+                        action='store_true',
+                        help='Pass this argument to show the trajectory ' +
+                        'length and class size distributions.')
+args = arg_parser.parse_args()
+
+
+# Read files to dataframe
+files = args.files
+data = pd.read_csv(args.files[0])
+files.pop(0)
+
+for file in args.files:
+    data = data.append(pd.read_csv(file))
+
+
+# Compute stats
 labels = data[args.label].unique()
 num_attributes = len(data.columns) - 1
 num_points = len(data)
