@@ -138,25 +138,28 @@ elif args.operation == 'drop':
 elif args.operation == 'segment':
     tidcol_query = "ALTER TABLE ge_point ADD COLUMN mode_tid INTEGER"
     users_query = "SELECT DISTINCT user_id FROM ge_point ORDER BY user_id ASC"
-    select_query = """SELECT p.id, p.tid, t.mode FROM ge_point p
+    select_query = """SELECT p.id, p.date_time, t.mode FROM ge_point p
                       INNER JOIN ge_transportation t ON p.transportation_id =
                       t.id
                       WHERE p.user_id = :user
-                      ORDER BY p.tid ASC, date_time ASC"""
+                      ORDER BY p.date_time ASC"""
     update_query = "UPDATE ge_point SET mode_tid" + \
                    " = :tid WHERE id IN (:point_ids)"
     traj_id = 1
 
     logger.log(Logger.INFO, "Segmenting trajectories... ")
     db.execute(tidcol_query)
-    
+
     for user in db.query(users_query):
         points = db.query(select_query.replace(":user", str(user[0])))
         update_ids = []
         cur_mode = None
+        cur_date = None
+        interval = 
 
-        for id, tid, mode in points:
-            if mode != cur_mode and len(update_ids) > 0:
+        for id, date_time, mode in points:
+            interval = 
+            if (mode != cur_mode or ) and len(update_ids) > 0:
                 db.execute(
                     update_query.replace(":tid", str(traj_id))
                     .replace(":point_ids", str(update_ids)[1:-1]))
