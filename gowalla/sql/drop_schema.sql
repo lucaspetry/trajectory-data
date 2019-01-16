@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS go_checkin;
+DROP TABLE IF EXISTS go_friendship;
+DROP TABLE IF EXISTS go_user;
