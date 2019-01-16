@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS bk_checkin;
+DROP TABLE IF EXISTS bk_friendship;
+DROP TABLE IF EXISTS bk_user;
