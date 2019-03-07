@@ -21,8 +21,6 @@ df_updated['icao'] = [None for i in range(0, len(df_updated))]
 df_updated['record_begin'] = [None for i in range(0, len(df_updated))]
 df_updated['record_end'] = [None for i in range(0, len(df_updated))]
 
-# USAF   WBAN    STATION NAME CTRY STATE  ICAO     LAT      LON  ELEV(M)     BEGIN       END
-
 for i, row in df_updated.iterrows():
     old_row = df.loc[df['WBAN'] == row['wban'], :].values[0]
     beg = str(old_row[9])

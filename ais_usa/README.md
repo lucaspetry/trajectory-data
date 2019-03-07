@@ -3,6 +3,7 @@
 - Folder: `ais`
 - Sources:
   - https://marinecadastre.gov/ais/
+  - https://marinecadastre.gov/ais/AIS%20Documents/UTMZoneMap2014.png
 - Instructions:
   1. **Downloading the data:** AIS data can be downloaded by running the `get_ais_files.py` script.
   Before running it, change the `years`, `months`, and `zones` variables with the specific values for which you want to download the data.
@@ -23,7 +24,7 @@
   listed above.
   2. **Processing the data:** The script `process_noaa_stations.py` processes station files. It merges the station information selected on the LCD website with
   the extensive station list available at the FTP url above. Example files are provided in the folder. Following, run the script `process_lcd.py` to process the
-  files downloaded. The script extracts and formats fields in the original files, in order to make them compatible with the AIS data.
+  files downloaded. The script extracts and formats hourly information fields in the original files, in order to make them compatible with the AIS data.
 
 ## Global Marine Data
 - Folder: `icoads`
