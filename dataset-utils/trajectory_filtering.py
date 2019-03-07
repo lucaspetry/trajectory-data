@@ -49,6 +49,14 @@ arg_parser.add_argument('--min-traj-count',
                         default=1,
                         help='The minimum number of trajectories per class (default: 1).',
                         type=int)
+arg_parser.add_argument('--usercol',
+                        default='anonymized_user_id',
+                        help='The user id column of check-ins.',
+                        type=str)
+arg_parser.add_argument('--venuecol',
+                        default='venue_id',
+                        help='The venue id column of check-ins.',
+                        type=str)
 arg_parser.add_argument('--userfilter',
                         help='A filter on the selected users (in the format of a SQL WHERE expression).',
                         type=str)
@@ -96,16 +104,17 @@ insert_table_query = "CREATE TABLE " + args.totable + \
                      " AS (SELECT * FROM " + args.origtable + " WHERE " + \
                      args.tidcol + " IS NOT NULL :where)"
 
-no_cat_query = """DELETE FROM :table WHERE venue_id IN (
-    SELECT venue_id FROM :table
+no_cat_query = """DELETE FROM :table WHERE :venue_id IN (
+    SELECT :venue_id FROM :table
     EXCEPT
     SELECT v.id FROM fq_venue v
-    INNER JOIN fq_venue_category vc ON v.id = vc.venue_id
+    INNER JOIN fq_venue_category vc ON v.id = vc.:venue_id
 )"""
+no_cat_query = no_cat_query.replace(":venue_id", args.venuecol)
 
-broad_cat_query = """DELETE FROM :table WHERE venue_id IN (
+broad_cat_query = """DELETE FROM :table WHERE :venue_id IN (
     SELECT v.id FROM fq_venue v
-        INNER JOIN fq_venue_category vc ON v.id = vc.venue_id
+        INNER JOIN fq_venue_category vc ON v.id = vc.:venue_id
         INNER JOIN fq_category c ON vc.category_id = c.id
         WHERE c.foursquare_id IN (
             '56aa371be4b08b9a8d573544', -- Bay
@@ -129,17 +138,20 @@ broad_cat_query = """DELETE FROM :table WHERE venue_id IN (
             '4bf58dd8d48988d129951735'  -- Train Station
         )
 )"""
+broad_cat_query = broad_cat_query.replace(":venue_id", args.venuecol)
 
 remove_duplicate_query = """DELETE FROM :table WHERE id IN
 (
     SELECT DISTINCT(t1.id) FROM :table t1
     INNER JOIN :table t2 ON t1.id < t2.id
-        AND t1.anonymized_user_id = t2.anonymized_user_id
-        AND t1.venue_id = t2.venue_id
+        AND t1.:user_id = t2.:user_id
+        AND t1.:venue_id = t2.:venue_id
         AND "timestamp"(t1.date_time) - "timestamp"(t2.date_time) <= (interval '1 minute' * :duplicate_interval)
         AND "timestamp"(t1.date_time) - "timestamp"(t2.date_time) >= (interval '-1 minute' * :duplicate_interval)
     ORDER BY t1.id
 )"""
+remove_duplicate_query = remove_duplicate_query.replace(":user_id", args.usercol)
+remove_duplicate_query = remove_duplicate_query.replace(":venue_id", args.venuecol)
 
 traj_remove_query = """DELETE FROM :table WHERE :tid IN (
     SELECT :tid FROM :table
