@@ -86,7 +86,7 @@ for year in years:
             data = new_df
 
     print('  Sorting records of processed file(s)')
-    data.sort_values(by=['date_time', 'id'],
+    data.sort_values(by=['date_time_utc', 'id'],
                      ascending=True, inplace=True)
     print('  Saving file', proc_file)
     data.to_csv(proc_file, index=False)
