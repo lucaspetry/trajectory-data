@@ -10,8 +10,7 @@
   2. **Processing the data:** `process_ais_files.py` can be used for curating the data. It merges files of different zones into a single file,
   one for each month/year pair. Three new columns are added in the processed files: `Zone` (the zone file from where the record was extracted),
   `VesselTypeGroup` and `VesselTypeDescription` (type information gathered from the `vessel_types.csv` file). Lastly, the data is sorted in ascending
-  order by `DateTime` and `IMO`, respectively. Be aware that the files are fully loaded in memory for this last step (I am currently working on sorting
-  files using unix sort).
+  order by `DateTime` and `IMO`, respectively. Be aware that the files are fully loaded in memory.
 
 ## Local Climatological Data (LCD)
 - Description: Hourly observations of temperature, precipitation, sky conditions, etc. The data is collected at stations located on the ground.

@@ -1,6 +1,5 @@
 from os import path
 import os
-import csv
 from datetime import datetime
 import pandas as pd
 
@@ -21,11 +20,13 @@ vessels = pd.read_csv(vessel_file)
 
 
 def get_vessel_group(ntype):
-    return vessels.loc[vessels['type_number'] == ntype, 'type_group'].values[0]
+    return vessels.loc[vessels['type_number'] == ntype,
+                       'type_group'].values[0]
 
 
 def get_vessel_desc(ntype):
-    return vessels.loc[vessels['type_number'] == ntype, 'description'].values[0]
+    return vessels.loc[vessels['type_number'] == ntype,
+                       'description'].values[0]
 
 
 if not path.isdir(proc_dir):
@@ -40,61 +41,58 @@ for year in years:
         to_save = file_out.replace(':dir', proc_dir) \
                           .replace(':year', year) \
                           .replace(':month', month)
-        fields = ['MMSI', 'DateTime', 'Lat', 'Lon', 'SOG', 'COG',
-                  'Heading', 'VesselName', 'IMO', 'CallSign', 'VesselType',
-                  'VesselTypeGroup', 'VesselTypeDescription', 'Status',
-                  'Length', 'Width', 'Draft', 'Cargo', 'Zone']
+        data = None
 
-        with open(to_save, 'w') as o:
-            writer = csv.DictWriter(o, fields)
-            writer.writeheader()
+        for zone in zones:
+            print('  Processing AIS for Zone', zone)
+            to_process = file.replace(':dir', 'AIS_ASCII_by_UTM_Month') \
+                             .replace(':year', year) \
+                             .replace(':month', month) \
+                             .replace(':zone', zone)
 
-            for zone in zones:
-                print('  Processing AIS for Zone', zone)
-                to_process = file.replace(':dir', 'AIS_ASCII_by_UTM_Month') \
-                                 .replace(':year', year) \
-                                 .replace(':month', month) \
-                                 .replace(':zone', zone)
+            if not path.isfile(to_process):
+                print('  File', to_process, 'not found!')
+                continue
 
-                if not path.isfile(to_process):
-                    print('  File', to_process, 'not found!')
-                    continue
+            df = pd.read_csv(to_process)
+            new_df = pd.DataFrame()
+            v_type = [0 if t == '' else int(t)
+                      for t in df['VesselType'].values]
+            new_df['MMSI'] = df['MMSI']
+            new_df['IMO'] = [0 if df['IMO'] == '' else df['IMO'][3:]]
+            new_df['DateTime'] = \
+                [datetime.strptime(d, '%Y-%m-%dT%H:%M:%S')
+                 for d in df['BaseDateTime'].values]
+            new_df['Lat'] = df['LAT']
+            new_df['Lon'] = df['LON']
+            new_df['SOG'] = df['SOG']
+            new_df['COG'] = df['COG']
+            new_df['Heading'] = df['Heading']
+            new_df['VesselName'] = df['VesselName']
+            new_df['CallSign'] = df['CallSign']
+            new_df['VesselType'] = v_type
+            new_df['VesselTypeGroup'] = \
+                [get_vessel_group(v) for v in v_type]
+            new_df['VesselTypeDescription'] = \
+                [get_vessel_desc(v) for v in v_type]
+            new_df['Status'] = df['Status']
+            new_df['Length'] = df['Length']
+            new_df['Width'] = df['Width']
+            new_df['Draft'] = df['Draft']
+            new_df['Cargo'] = df['Cargo']
+            new_df['Zone'] = zone
 
-                with open(to_process, 'r') as i:
-                    reader = csv.DictReader(i)
-
-                    for row in reader:
-                        v_type = 0 if row['VesselType'] == '' \
-                            else int(row['VesselType'])
-                        writer.writerow({
-                            'MMSI': row['MMSI'],
-                            'IMO': 0 if row['IMO'] == '' else row['IMO'][3:],
-                            'DateTime': datetime.strptime(
-                                row['BaseDateTime'], '%Y-%m-%dT%H:%M:%S'),
-                            'Lat': row['LAT'],
-                            'Lon': row['LON'],
-                            'SOG': row['SOG'],
-                            'COG': row['COG'],
-                            'Heading': row['Heading'],
-                            'VesselName': row['VesselName'],
-                            'CallSign': row['CallSign'],
-                            'VesselType': v_type,
-                            'VesselTypeGroup': get_vessel_group(v_type),
-                            'VesselTypeDescription': get_vessel_desc(v_type),
-                            'Status': row['Status'],
-                            'Length': row['Length'],
-                            'Width': row['Width'],
-                            'Draft': row['Draft'],
-                            'Cargo': row['Cargo'],
-                            'Zone': zone
-                        })
+            if data is not None:
+                data = pd.concat([data, new_df], ignore_index=True)
+            else:
+                data = new_df
 
         print('  Sorting records of processed file')
-        df = pd.read_csv(to_save)
-        df.sort_values(by=['DateTime', 'IMO'], ascending=True, inplace=True)
-        df['IMO'] = df['IMO'].astype('int')
-        df['VesselType'] = df['VesselType'].astype('int')
+        data.sort_values(by=['DateTime', 'IMO'], ascending=True, inplace=True)
+        data['IMO'] = data['IMO'].astype('int')
+        data['VesselType'] = data['VesselType'].astype('int')
+
         print('  Saving file', to_save)
-        df.to_csv(to_save, index=False)
+        data.to_csv(to_save, index=False)
 
 print('\nDone!')
