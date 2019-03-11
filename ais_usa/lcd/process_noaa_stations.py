@@ -1,7 +1,11 @@
 import os
 import pandas as pd
+import pytz
+from timezonefinder import TimezoneFinder
+from datetime import datetime
 
 
+tf = TimezoneFinder()
 station_file = 'noaa_station_usa_west_coast.csv'
 updated_station_file = 'noaa_station_usa_west_coast_order_list.csv'
 out_file = 'processed/lcd_station_usa_west_coast.csv'
@@ -36,5 +40,11 @@ for i, row in df_updated.iterrows():
     df_updated.loc[i, 'icao'] = old_row[5]
     df_updated.loc[i, 'record_begin'] = beg
     df_updated.loc[i, 'record_end'] = end
+    tz_target = pytz.timezone(tf.certain_timezone_at(lng=old_row[7],
+                                                     lat=old_row[6]))
+    x = datetime(2000, 1, 1, 0, 0, 0)
+    diff = pytz.utc.localize(x) - \
+        tz_target.localize(x)
+    df_updated.loc[i, 'utc_offset_min'] = int(diff.total_seconds() / 60)
 
 df_updated.to_csv(out_file, index=False)
