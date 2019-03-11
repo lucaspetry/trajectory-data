@@ -28,12 +28,11 @@ for year in years:
                           .replace(':year', year)
     files = glob.glob(pattern)
     data = None
-    proc_file = get_prefix(files) + '_:year.csv' \
-        .replace('./', proc_dir) \
+    proc_file = proc_dir + get_prefix(files)[2:] + '_:year.csv' \
         .replace(':year', year)
 
     if os.path.isfile(proc_file):
-        os.rm(proc_file)
+        os.remove(proc_file)
 
     for file in files:
         print('  Processing file', file)
