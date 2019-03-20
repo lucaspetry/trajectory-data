@@ -38,10 +38,28 @@ for year in years:
             new_df['wban'] = [int(str(s)[6:]) for s in df['STATION'].values]
 
             utc_offset = []
+            (icao, station, state, country,
+             lat, lon, elev_meters) = [], [], [], [], [], [], []
+
             for w in new_df['wban'].values:
                 utc_offset.append(timedelta(minutes=stations.loc[
                     stations['wban'] == w, 'utc_offset_min'].values[0]))
+                s = stations.loc[stations['wban'] == w, :]
+                icao.append(s['icao'].values[0])
+                station.append(s['station'].values[0])
+                state.append(s['state'].values[0])
+                country.append(s['country'].values[0])
+                lat.append(s['lat'].values[0])
+                lon.append(s['lon'].values[0])
+                elev_meters.append(s['elev_meters'].values[0])
 
+            new_df['icao'] = icao
+            new_df['station'] = station
+            new_df['country'] = country
+            new_df['state'] = state
+            new_df['lat'] = lat
+            new_df['lon'] = lon
+            new_df['elev_meters'] = elev_meters
             new_df['date_time_utc'] = [datetime.strptime(d, '%Y-%m-%dT%H:%M:%S') -
                                        utc_offset[i]
                                        for i, d in enumerate(df['DATE'].values)]
