@@ -8,6 +8,7 @@ proc_dir = 'processed'
 file = ':dir/:year/AIS_:year_:month_Zone:zone.csv'
 file_out = ':dir/:year/AIS_:year_:month.csv'
 vessel_file = 'vessel_types.csv'
+flag_file = 'maritime_vessel_identification.csv'
 years = ['2015']
 months = ['01', '02', '03', '04', '05', '06',
           '07', '08', '09', '10', '11', '12']
@@ -17,6 +18,7 @@ months = ['01', '02', '03', '04', '05', '06',
 zones = ['06', '07', '08', '09', '10', '11']
 
 vessels = pd.read_csv(vessel_file)
+flags = pd.read_csv(flag_file)
 
 
 def get_vessel_group(ntype):
@@ -27,6 +29,16 @@ def get_vessel_group(ntype):
 def get_vessel_desc(ntype):
     return vessels.loc[vessels['type_number'] == ntype,
                        'description'].values[0]
+
+
+def get_vessel_country(mmsi):
+    mid = int(str(mmsi)[:3])
+    return flags.loc[flags['mid'] == mid, 'country'].values[0]
+
+
+def get_vessel_flag(mmsi):
+    mid = int(str(mmsi)[:3])
+    return flags.loc[flags['mid'] == mid, 'country_code'].values[0]
 
 
 if not path.isdir(proc_dir):
@@ -81,6 +93,10 @@ for year in years:
             new_df['Draft'] = df['Draft']
             new_df['Cargo'] = df['Cargo']
             new_df['Zone'] = zone
+            new_df['Country'] = [get_vessel_country(mmsi)
+                                 for mmsi in df['MMSI'].values]
+            new_df['Flag'] = [get_vessel_flag(mmsi)
+                              for mmsi in df['MMSI'].values]
 
             if data is not None:
                 data = pd.concat([data, new_df], ignore_index=True)
