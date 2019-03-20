@@ -33,12 +33,14 @@ def get_vessel_desc(ntype):
 
 def get_vessel_country(mmsi):
     mid = int(str(mmsi)[:3])
-    return flags.loc[flags['mid'] == mid, 'country'].values[0]
+    f = flags.loc[flags['mid'] == mid, 'country'].values
+    return f[0] if len(f) > 0 else ''
 
 
 def get_vessel_flag(mmsi):
     mid = int(str(mmsi)[:3])
-    return flags.loc[flags['mid'] == mid, 'country_code'].values[0]
+    f = flags.loc[flags['mid'] == mid, 'country_code'].values  
+    return f[0] if len(f) > 0 else ''
 
 
 if not path.isdir(proc_dir):
@@ -104,7 +106,7 @@ for year in years:
                 data = new_df
 
         print('  Sorting records of processed file(s)')
-        data.sort_values(by=['DateTime', 'IMO'], ascending=True, inplace=True)
+        data.sort_values(by='DateTime', ascending=True, inplace=True)
         data['IMO'] = data['IMO'].astype('int')
         data['VesselType'] = data['VesselType'].astype('int')
 
