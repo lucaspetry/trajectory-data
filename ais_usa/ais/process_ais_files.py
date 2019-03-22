@@ -73,7 +73,7 @@ for year in years:
             v_type = [0 if pd.isna(t) else int(t)
                       for t in df['VesselType']]
             new_df['MMSI'] = df['MMSI']
-            new_df['IMO'] = [0 if i == '' else str(i)[3:] for i in df['IMO']]
+            new_df['IMO'] = df['IMO']
             new_df['DateTime'] = \
                 [datetime.strptime(d, '%Y-%m-%dT%H:%M:%S')
                  for d in df['BaseDateTime'].values]
@@ -107,7 +107,7 @@ for year in years:
 
         print('  Sorting records of processed file(s)')
         data.sort_values(by='DateTime', ascending=True, inplace=True)
-        data['IMO'] = data['IMO'].astype('int')
+        # data['IMO'] = data['IMO'].astype('int')
         data['VesselType'] = data['VesselType'].astype('int')
 
         print('  Saving file', to_save)
