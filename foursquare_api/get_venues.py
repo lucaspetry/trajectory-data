@@ -65,7 +65,7 @@ def fetch_venues():
             if 'is invalid for venue id' in rsp['meta']['errorDetail']:
                 break
 
-            if req._status != 500:
+            if req._status not in [500, 502]:
                 ACTIVE_KEY = (ACTIVE_KEY + 1) % len(API_KEYS)
                 req.config(client_id=API_KEYS[ACTIVE_KEY][0],
                            client_secret=API_KEYS[ACTIVE_KEY][1])

@@ -202,8 +202,7 @@ def update_venues(db, config, folder, reset=False):
                    " SET date_time_updated = NULL")
         logger.log(Logger.INFO, "Reseting timestamp updates... SUCCESS!")
         logger.log(Logger.INFO, "Deleting category links... ")
-        db.execute("UPDATE " + DBSPEC.TB_VENUE +
-                   " SET date_time_updated = NULL")
+        db.execute("DELETE FROM " + DBSPEC.TB_VENUE_CATEGORY)
         logger.log(Logger.INFO, "Deleting category links... SUCCESS!")
         db.commit()
 
